@@ -336,12 +336,12 @@ const Works = () => {
             </Card>
           </MDBox>
           <MDBox pt={3} px={2}>
-            <MDBox mt={3}>
+            <MDBox>
               <>
                 {/* <MDButton variant="gradient" color="success" onClick={handleExportCSV}>
                   Export CSV
                 </MDButton> */}
-                <MDBox mt={2} display="flex" justifyContent="center">
+                <MDBox display="flex" justifyContent="center">
                   <TableContainer component={Paper}>
                     {events?.length > 0 ? (
                       <>
