@@ -326,6 +326,11 @@ const Works = () => {
                       Clear
                     </MDButton>
                   </Grid>
+                  <Grid item xs={12} sm={2} style={{ display: "flex" }}>
+                    <MDButton variant="gradient" color="success" fullWidth onClick={handleExportCSV}>
+                  Export CSV
+                </MDButton>
+                  </Grid>
                 </Grid>
               </MDBox>
             </Card>
@@ -333,9 +338,9 @@ const Works = () => {
           <MDBox pt={3} px={2}>
             <MDBox mt={3}>
               <>
-                <MDButton variant="gradient" color="success" onClick={handleExportCSV}>
+                {/* <MDButton variant="gradient" color="success" onClick={handleExportCSV}>
                   Export CSV
-                </MDButton>
+                </MDButton> */}
                 <MDBox mt={2} display="flex" justifyContent="center">
                   <TableContainer component={Paper}>
                     {events?.length > 0 ? (
