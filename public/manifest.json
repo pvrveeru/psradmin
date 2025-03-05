@@ -1,0 +1,8 @@
+{
+  "short_name": "Digital Boarding",
+  "name": "Digital Boarding",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ef412b",
+  "background_color": "#ffffff"
+}

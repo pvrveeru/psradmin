@@ -1,0 +1,62 @@
+/* styles.css */
+.hide-on-desktop {
+  display: block; /* Show on mobile and tablet */
+}
+
+h3 {
+  margin-top: 20px;
+  font-weight: normal;
+}
+hr {
+  margin-bottom: 20px;
+}
+@media (min-width: 1024px) {
+  .hide-on-desktop {
+    display: none; /* Hide on desktop (1024px and larger) */
+  }
+  .css-ps1an-MuiGrid-root {
+    -webkit-flex-basis: auto;
+    -ms-flex-preferred-size: auto;
+    flex-basis: auto;
+    flex-grow: 0;
+    max-width: auto;
+  }
+}
+.customwidth {
+  max-width: 15% !important;
+}
+@media  (min-width: 1024px) {
+  header.MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation4.MuiAppBar-root.MuiAppBar-colorInherit.MuiAppBar-positionSticky.css-1lhqsmn-MuiPaper-root-MuiAppBar-root {
+    display: none;
+  }
+}
+
+@media (min-width: 576px) {
+  /* .css-ps1an-MuiGrid-root {
+    -webkit-flex-basis: 24.666667% !important;
+    -ms-flex-preferred-size: 24.666667% !important;
+    flex-basis: 24.666667% !important;
+    max-width: 24.666667% !important;
+  } */
+  .css-1lhqsmn-MuiPaper-root-MuiAppBar-root {
+    min-height: auto;
+  }
+
+  .css-1snd67r,
+  .css-cdivok {
+    overflow-y: auto;
+  }
+
+  .css-1snd67r table {
+    padding-right: 15px;
+  }
+
+  /* .MuiBox-root.css-1ircn5c {
+    display: flex;
+  } */
+
+  .MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary.MuiButton-sizeMedium.MuiButton-textSizeMedium.css-zt3ajx-MuiButtonBase-root-MuiButton-root {
+    float: right;
+  }
+
+}
