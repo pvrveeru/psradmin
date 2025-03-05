@@ -50,6 +50,7 @@ const Works = () => {
   const [endDate, setEndDate] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(""); // Selected user for filtering
+  const [error, setError] = useState(""); // Error message
 
   // Fetch data from API
 

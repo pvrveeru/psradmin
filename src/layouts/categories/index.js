@@ -19,6 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]); // List of categories
@@ -29,6 +30,7 @@ const Categories = () => {
   const [error, setError] = useState(""); // Error message
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
