@@ -35,6 +35,8 @@ import TextField from "@mui/material/TextField";
 import api from "../api";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
+import moment from "moment";
+import { format } from 'date-fns';
 
 const Works = () => {
   const [events, setEvents] = useState([]);
@@ -51,7 +53,6 @@ const Works = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(""); // Selected user for filtering
   const [error, setError] = useState(""); // Error message
-
   // Fetch data from API
 
   const fetchEvents = async () => {
@@ -116,12 +117,12 @@ const Works = () => {
     }
 
     const offset = page * rowsPerPage;
-    let url = `/assignments`;
+    let url = `/assignments?offset=${offset}&limit=${rowsPerPage}`;
 
-    if (selectedAssignor) url += `?assignedBy=${selectedAssignor}`;
-    if (startDate) url += `?startDate=${startDate.toISOString()}`;
-    if (endDate) url += `?endDate=${endDate.toISOString()}`;
-    if (selectedUser) url += `?userId=${selectedUser}`; // Include user filter
+    if (selectedAssignor) url += `&assignedBy=${selectedAssignor}`;
+    if (startDate) url += `&startDate=${startDate.toISOString()}`;
+    if (endDate) url += `&endDate=${endDate.toISOString()}`;
+    if (selectedUser) url += `&userId=${selectedUser}`; // Include user filter
 
     try {
       const response = await api.get(url, {
@@ -238,7 +239,11 @@ const Works = () => {
           >
             <MDTypography variant="h6" color="white">
               <div
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
                 <h2>Work Report</h2>
               </div>
@@ -248,7 +253,9 @@ const Works = () => {
             <Card style={{ backgroundColor: "#f6f0f0" }}>
               <MDBox p={3}>
                 <Grid container spacing={2}>
-                  <b style={{ lineHeight: "60px", marginLeft: "10px" }}>Search by</b>
+                  <b style={{ lineHeight: "60px", marginLeft: "10px" }}>
+                    Search by
+                  </b>
                   <Grid item xs={12} sm={2} style={{ maxWidth: "14%" }}>
                     <Select
                       fullWidth
@@ -266,7 +273,10 @@ const Works = () => {
                         <em>Select an Assignor</em>
                       </MenuItem>
                       {events.map((event) => (
-                        <MenuItem key={event.assignorId} value={event.assignorId}>
+                        <MenuItem
+                          key={event.assignorId}
+                          value={event.assignorId}
+                        >
                           {event.assignor}
                         </MenuItem>
                       ))}
@@ -279,7 +289,11 @@ const Works = () => {
                       variant="outlined"
                       value={selectedUser}
                       onChange={(e) => setSelectedUser(e.target.value)}
-                      style={{ border: "1px solid #ccc", lineHeight: "40px", boxShadow: "none" }}
+                      style={{
+                        border: "1px solid #ccc",
+                        lineHeight: "40px",
+                        boxShadow: "none",
+                      }}
                     >
                       <MenuItem value="">
                         <em>Select User</em>
@@ -298,7 +312,9 @@ const Works = () => {
                         label="Start Date"
                         value={startDate}
                         onChange={(date) => setStartDate(date)}
-                        renderInput={(params) => <TextField fullWidth {...params} />}
+                        renderInput={(params) => (
+                          <TextField fullWidth {...params} />
+                        )}
                       />
                     </LocalizationProvider>
                   </Grid>
@@ -308,7 +324,9 @@ const Works = () => {
                         label="End Date"
                         value={endDate}
                         onChange={(date) => setEndDate(date)}
-                        renderInput={(params) => <TextField fullWidth {...params} />}
+                        renderInput={(params) => (
+                          <TextField fullWidth {...params} />
+                        )}
                       />
                     </LocalizationProvider>
                   </Grid>
@@ -322,14 +340,24 @@ const Works = () => {
                     >
                       Search
                     </MDButton> */}
-                    <MDButton variant="gradient" color="info" fullWidth onClick={handleClearSearch}>
+                    <MDButton
+                      variant="gradient"
+                      color="info"
+                      fullWidth
+                      onClick={handleClearSearch}
+                    >
                       Clear
                     </MDButton>
                   </Grid>
                   <Grid item xs={12} sm={2} style={{ display: "flex" }}>
-                    <MDButton variant="gradient" color="success" fullWidth onClick={handleExportCSV}>
-                  Export CSV
-                </MDButton>
+                    <MDButton
+                      variant="gradient"
+                      color="success"
+                      fullWidth
+                      onClick={handleExportCSV}
+                    >
+                      Export CSV
+                    </MDButton>
                   </Grid>
                 </Grid>
               </MDBox>
@@ -353,7 +381,9 @@ const Works = () => {
                             marginBottom: "20px",
                           }}
                         >
-                          <thead style={{ background: "#efefef", fontSize: "15px" }}>
+                          <thead
+                            style={{ background: "#efefef", fontSize: "15px" }}
+                          >
                             <tr>
                               <th style={tableCellStyle}>Date</th>
                               <th style={tableCellStyle}>Assigned By</th>
@@ -370,18 +400,33 @@ const Works = () => {
                               works.map((work) => (
                                 <tr key={work.assignmentId}>
                                   <td style={tableCellStyle}>
-                                    {new Date(work.createdAt).toLocaleDateString()}
+                                    {work.createdAt
+                                      ? format(
+                                          new Date(work.createdAt),
+                                          "dd-MM-yyyy hh:mm a"
+                                        )
+                                      : "--"}
                                   </td>
-                                  <td style={tableCellStyle}>{work.assignedBy.assignor}</td>
-                                  <td style={tableCellStyle}>{work.name || "N/A"}</td>
-                                  <td style={tableCellStyle}>{work.clientName || "N/A"}</td>
+                                  <td style={tableCellStyle}>
+                                    {work.assignedBy.assignor}
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.name || "N/A"}
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.clientName || "N/A"}
+                                  </td>
                                   <td
                                     style={tableCellStyle}
-                                    onClick={() => handleOpen(work.galleryImages)}
+                                    onClick={() =>
+                                      handleOpen(work.galleryImages)
+                                    }
                                   >
                                     {work.siteId}
                                   </td>
-                                  <td style={tableCellStyle}>{work.activity}</td>
+                                  <td style={tableCellStyle}>
+                                    {work.activity}
+                                  </td>
                                   <td style={tableCellStyle}>
                                     {work.latitude} - {work.longitude}
                                   </td>
