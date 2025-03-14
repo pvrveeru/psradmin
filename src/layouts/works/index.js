@@ -450,6 +450,29 @@ const Works = () => {
                           onPageChange={(event, newPage) => setPage(newPage)}
                           onRowsPerPageChange={handleChangeRowsPerPage}
                         />
+                        <FormControl
+                          variant="outlined"
+                          sx={{
+                            minWidth: 120,
+                            //position: "absolute",
+                            marginTop: "-50px",
+                            marginLeft: "10px",
+                          }}
+                        >
+                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                          <Select
+                            labelId="rows-per-page-label"
+                            value={rowsPerPage}
+                            onChange={handleChangeRowsPerPage}
+                            label="Rows per page"
+                            style={{ height: "36px", fontSize: "16px" }}
+                          >
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={25}>25</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
+                          </Select>
+                        </FormControl>
                       </>
                     ) : (
                       <p style={{ textAlign: "center", margin: "20px 0" }}>
