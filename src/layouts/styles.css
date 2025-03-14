@@ -23,7 +23,7 @@ hr {
   }
 }
 .customwidth {
-  max-width: 15% !important;
+  max-width: 17% !important;
 }
 @media  (min-width: 1024px) {
   header.MuiPaper-root.MuiPaper-elevation.MuiPaper-elevation4.MuiAppBar-root.MuiAppBar-colorInherit.MuiAppBar-positionSticky.css-1lhqsmn-MuiPaper-root-MuiAppBar-root {

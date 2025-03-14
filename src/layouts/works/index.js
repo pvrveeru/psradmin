@@ -37,6 +37,7 @@ import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import moment from "moment";
 import { format } from 'date-fns';
+import dayjs from 'dayjs';
 
 const Works = () => {
   const [events, setEvents] = useState([]);
@@ -120,8 +121,8 @@ const Works = () => {
     let url = `/assignments?offset=${offset}&limit=${rowsPerPage}`;
 
     if (selectedAssignor) url += `&assignedBy=${selectedAssignor}`;
-    if (startDate) url += `&startDate=${startDate.toISOString()}`;
-    if (endDate) url += `&endDate=${endDate.toISOString()}`;
+    if (startDate) url += `&startDate=${dayjs(startDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
+  if (endDate) url += `&endDate=${dayjs(endDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
     if (selectedUser) url += `&userId=${selectedUser}`; // Include user filter
 
     try {
@@ -173,11 +174,14 @@ const Works = () => {
 
     // Define CSV headers based on table columns
     const csvData = works.map((work) => ({
-      Date: work.createdAt,
+      Date: work.createdAt
+        ? format(new Date(work.createdAt), "dd-MM-yyyy hh:mm a")
+        : "--",
       Assignor: work.assignedBy.assignor,
       "Employee Name": work.name,
       "Client Name": work.clientName,
       Activity: work.activity,
+      SiteId: work.siteId,
       Latitude: work.latitude,
       Longitude: work.longitude,
       Remarks: work.remarks,
@@ -201,11 +205,13 @@ const Works = () => {
   };
 
   const handleStartDateChange = (date) => {
-    setStartDate(date);
+    const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
+    setStartDate(formattedDate);
   };
-
+  
   const handleEndDateChange = (date) => {
-    setEndDate(date);
+    const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
+    setEndDate(formattedDate);
   };
 
   const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
@@ -256,7 +262,7 @@ const Works = () => {
                   <b style={{ lineHeight: "60px", marginLeft: "10px" }}>
                     Search by
                   </b>
-                  <Grid item xs={12} sm={2} style={{ maxWidth: "14%" }}>
+                  <Grid item xs={12} sm={2} style={{ maxWidth: "17%" }}>
                     <Select
                       fullWidth
                       displayEmpty
@@ -349,14 +355,14 @@ const Works = () => {
                       Clear
                     </MDButton>
                   </Grid>
-                  <Grid item xs={12} sm={2} style={{ display: "flex" }}>
+                  <Grid item xs={12} sm={1} style={{ display: "flex" }}>
                     <MDButton
                       variant="gradient"
                       color="success"
                       fullWidth
                       onClick={handleExportCSV}
                     >
-                      Export CSV
+                      Export
                     </MDButton>
                   </Grid>
                 </Grid>
