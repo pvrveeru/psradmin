@@ -35,6 +35,9 @@ import TextField from "@mui/material/TextField";
 import api from "../api";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
+import moment from "moment";
+import { format } from 'date-fns';
+import dayjs from 'dayjs';
 
 const Works = () => {
   const [events, setEvents] = useState([]);
@@ -51,7 +54,6 @@ const Works = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(""); // Selected user for filtering
   const [error, setError] = useState(""); // Error message
-
   // Fetch data from API
 
   const fetchEvents = async () => {
@@ -116,12 +118,12 @@ const Works = () => {
     }
 
     const offset = page * rowsPerPage;
-    let url = `/assignments`;
+    let url = `/assignments?offset=${offset}&limit=${rowsPerPage}`;
 
-    if (selectedAssignor) url += `?assignedBy=${selectedAssignor}`;
-    if (startDate) url += `?startDate=${startDate.toISOString()}`;
-    if (endDate) url += `?endDate=${endDate.toISOString()}`;
-    if (selectedUser) url += `?userId=${selectedUser}`; // Include user filter
+    if (selectedAssignor) url += `&assignedBy=${selectedAssignor}`;
+    if (startDate) url += `&startDate=${dayjs(startDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
+  if (endDate) url += `&endDate=${dayjs(endDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
+    if (selectedUser) url += `&userId=${selectedUser}`; // Include user filter
 
     try {
       const response = await api.get(url, {
@@ -172,11 +174,14 @@ const Works = () => {
 
     // Define CSV headers based on table columns
     const csvData = works.map((work) => ({
-      Date: work.createdAt,
+      Date: work.createdAt
+        ? format(new Date(work.createdAt), "dd-MM-yyyy hh:mm a")
+        : "--",
       Assignor: work.assignedBy.assignor,
       "Employee Name": work.name,
       "Client Name": work.clientName,
       Activity: work.activity,
+      SiteId: work.siteId,
       Latitude: work.latitude,
       Longitude: work.longitude,
       Remarks: work.remarks,
@@ -200,11 +205,13 @@ const Works = () => {
   };
 
   const handleStartDateChange = (date) => {
-    setStartDate(date);
+    const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
+    setStartDate(formattedDate);
   };
-
+  
   const handleEndDateChange = (date) => {
-    setEndDate(date);
+    const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
+    setEndDate(formattedDate);
   };
 
   const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
@@ -238,7 +245,11 @@ const Works = () => {
           >
             <MDTypography variant="h6" color="white">
               <div
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
                 <h2>Work Report</h2>
               </div>
@@ -248,8 +259,10 @@ const Works = () => {
             <Card style={{ backgroundColor: "#f6f0f0" }}>
               <MDBox p={3}>
                 <Grid container spacing={2}>
-                  <b style={{ lineHeight: "60px", marginLeft: "10px" }}>Search by</b>
-                  <Grid item xs={12} sm={2} style={{ maxWidth: "14%" }}>
+                  <b style={{ lineHeight: "60px", marginLeft: "10px" }}>
+                    Search by
+                  </b>
+                  <Grid item xs={12} sm={2} style={{ maxWidth: "17%" }}>
                     <Select
                       fullWidth
                       displayEmpty
@@ -266,7 +279,10 @@ const Works = () => {
                         <em>Select an Assignor</em>
                       </MenuItem>
                       {events.map((event) => (
-                        <MenuItem key={event.assignorId} value={event.assignorId}>
+                        <MenuItem
+                          key={event.assignorId}
+                          value={event.assignorId}
+                        >
                           {event.assignor}
                         </MenuItem>
                       ))}
@@ -279,7 +295,11 @@ const Works = () => {
                       variant="outlined"
                       value={selectedUser}
                       onChange={(e) => setSelectedUser(e.target.value)}
-                      style={{ border: "1px solid #ccc", lineHeight: "40px", boxShadow: "none" }}
+                      style={{
+                        border: "1px solid #ccc",
+                        lineHeight: "40px",
+                        boxShadow: "none",
+                      }}
                     >
                       <MenuItem value="">
                         <em>Select User</em>
@@ -298,7 +318,9 @@ const Works = () => {
                         label="Start Date"
                         value={startDate}
                         onChange={(date) => setStartDate(date)}
-                        renderInput={(params) => <TextField fullWidth {...params} />}
+                        renderInput={(params) => (
+                          <TextField fullWidth {...params} />
+                        )}
                       />
                     </LocalizationProvider>
                   </Grid>
@@ -308,7 +330,9 @@ const Works = () => {
                         label="End Date"
                         value={endDate}
                         onChange={(date) => setEndDate(date)}
-                        renderInput={(params) => <TextField fullWidth {...params} />}
+                        renderInput={(params) => (
+                          <TextField fullWidth {...params} />
+                        )}
                       />
                     </LocalizationProvider>
                   </Grid>
@@ -322,14 +346,24 @@ const Works = () => {
                     >
                       Search
                     </MDButton> */}
-                    <MDButton variant="gradient" color="info" fullWidth onClick={handleClearSearch}>
+                    <MDButton
+                      variant="gradient"
+                      color="info"
+                      fullWidth
+                      onClick={handleClearSearch}
+                    >
                       Clear
                     </MDButton>
                   </Grid>
-                  <Grid item xs={12} sm={2} style={{ display: "flex" }}>
-                    <MDButton variant="gradient" color="success" fullWidth onClick={handleExportCSV}>
-                  Export CSV
-                </MDButton>
+                  <Grid item xs={12} sm={1} style={{ display: "flex" }}>
+                    <MDButton
+                      variant="gradient"
+                      color="success"
+                      fullWidth
+                      onClick={handleExportCSV}
+                    >
+                      Export
+                    </MDButton>
                   </Grid>
                 </Grid>
               </MDBox>
@@ -353,7 +387,9 @@ const Works = () => {
                             marginBottom: "20px",
                           }}
                         >
-                          <thead style={{ background: "#efefef", fontSize: "15px" }}>
+                          <thead
+                            style={{ background: "#efefef", fontSize: "15px" }}
+                          >
                             <tr>
                               <th style={tableCellStyle}>Date</th>
                               <th style={tableCellStyle}>Assigned By</th>
@@ -370,18 +406,33 @@ const Works = () => {
                               works.map((work) => (
                                 <tr key={work.assignmentId}>
                                   <td style={tableCellStyle}>
-                                    {new Date(work.createdAt).toLocaleDateString()}
+                                    {work.createdAt
+                                      ? format(
+                                          new Date(work.createdAt),
+                                          "dd-MM-yyyy hh:mm a"
+                                        )
+                                      : "--"}
                                   </td>
-                                  <td style={tableCellStyle}>{work.assignedBy.assignor}</td>
-                                  <td style={tableCellStyle}>{work.name || "N/A"}</td>
-                                  <td style={tableCellStyle}>{work.clientName || "N/A"}</td>
+                                  <td style={tableCellStyle}>
+                                    {work.assignedBy.assignor}
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.name || "N/A"}
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.clientName || "N/A"}
+                                  </td>
                                   <td
                                     style={tableCellStyle}
-                                    onClick={() => handleOpen(work.galleryImages)}
+                                    onClick={() =>
+                                      handleOpen(work.galleryImages)
+                                    }
                                   >
                                     {work.siteId}
                                   </td>
-                                  <td style={tableCellStyle}>{work.activity}</td>
+                                  <td style={tableCellStyle}>
+                                    {work.activity}
+                                  </td>
                                   <td style={tableCellStyle}>
                                     {work.latitude} - {work.longitude}
                                   </td>
@@ -399,6 +450,29 @@ const Works = () => {
                           onPageChange={(event, newPage) => setPage(newPage)}
                           onRowsPerPageChange={handleChangeRowsPerPage}
                         />
+                        <FormControl
+                          variant="outlined"
+                          sx={{
+                            minWidth: 120,
+                            //position: "absolute",
+                            marginTop: "-50px",
+                            marginLeft: "10px",
+                          }}
+                        >
+                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                          <Select
+                            labelId="rows-per-page-label"
+                            value={rowsPerPage}
+                            onChange={handleChangeRowsPerPage}
+                            label="Rows per page"
+                            style={{ height: "36px", fontSize: "16px" }}
+                          >
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={25}>25</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
+                          </Select>
+                        </FormControl>
                       </>
                     ) : (
                       <p style={{ textAlign: "center", margin: "20px 0" }}>
