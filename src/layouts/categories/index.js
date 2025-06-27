@@ -148,24 +148,32 @@ const Categories = () => {
 
       console.log("Deleting category:", categoryToDelete);
 
-      const response = await api.delete(`/assignor/${categoryToDelete.assignorId}`, {
-        headers: {
-          Accept: "*/*",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.delete(
+        `/assignor/${categoryToDelete.assignorId}`,
+        {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       console.log("Delete response:", response.data);
 
       // Update state to remove the deleted category
       setCategories((prevCategories) =>
-        prevCategories.filter((c) => c.assignorId !== categoryToDelete.assignorId)
+        prevCategories.filter(
+          (c) => c.assignorId !== categoryToDelete.assignorId
+        )
       );
 
       setIsDeleteConfirmOpen(false);
       setCategoryToDelete(null);
     } catch (err) {
-      console.error("Error deleting category:", err.response?.data || err.message);
+      console.error(
+        "Error deleting category:",
+        err.response?.data || err.message
+      );
       setError("Failed to delete category. Please try again.");
     } finally {
       setLoading(false);
@@ -215,7 +223,10 @@ const Categories = () => {
                 {loading ? (
                   <p>Loading...</p>
                 ) : (
-                  <TableContainer component={Paper} style={{ borderRadius: 0, boxShadow: "none" }}>
+                  <TableContainer
+                    component={Paper}
+                    style={{ borderRadius: 0, boxShadow: "none" }}
+                  >
                     <table
                       style={{
                         width: "100%",
@@ -224,7 +235,9 @@ const Categories = () => {
                         marginBottom: "20px",
                       }}
                     >
-                      <thead style={{ background: "#efefef", fontSize: "15px" }}>
+                      <thead
+                        style={{ background: "#efefef", fontSize: "15px" }}
+                      >
                         <tr>
                           <th style={tableCellStyle}>Assigned</th>
                           <th style={tableCellStyle}>Create Date</th>
@@ -235,9 +248,13 @@ const Categories = () => {
                         {Array.isArray(categories) &&
                           categories.map((category) => (
                             <tr key={category.assignorId}>
-                              <td style={tableCellStyle}>{category.assignor}</td>
                               <td style={tableCellStyle}>
-                                {new Date(category.createdAt).toLocaleDateString()}
+                                {category.assignor}
+                              </td>
+                              <td style={tableCellStyle}>
+                                {new Date(
+                                  category.createdAt
+                                ).toLocaleDateString()}
                               </td>
                               <td style={tableCellStyle}>
                                 <MDButton
@@ -286,13 +303,29 @@ const Categories = () => {
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
-                    <Button onClick={handleFormSubmit} disabled={loading}>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="error"
+                      onClick={handleCloseDialog}
+                    >
+                      Cancel
+                    </MDButton>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="info"
+                      onClick={handleFormSubmit}
+                      disabled={loading}
+                    >
                       {loading ? "Submitting..." : "Submit"}
-                    </Button>
+                    </MDButton>
                   </DialogActions>
                 </Dialog>
-                <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
+                <Dialog
+                  open={isDeleteConfirmOpen}
+                  onClose={() => setIsDeleteConfirmOpen(false)}
+                >
                   <DialogTitle
                     style={{
                       maxWidth: "500px", // Restricts maximum size
@@ -302,13 +335,27 @@ const Categories = () => {
                     Confirm Deletion
                   </DialogTitle>
                   <DialogContent>
-                    Are you sure you want to delete &quot;{categoryToDelete?.assignor}&quot;?
+                    Are you sure you want to delete &quot;
+                    {categoryToDelete?.assignor}&quot;?
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={() => setIsDeleteConfirmOpen(false)}>Cancel</Button>
-                    <Button onClick={handleDeleteCategory} color="error" disabled={loading}>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="error"
+                      onClick={() => setIsDeleteConfirmOpen(false)}
+                    >
+                      Cancel
+                    </MDButton>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="info"
+                      onClick={handleDeleteCategory}
+                      disabled={loading}
+                    >
                       {loading ? "Deleting..." : "Delete"}
-                    </Button>
+                    </MDButton>
                   </DialogActions>
                 </Dialog>
                 {error && <p style={{ color: "red" }}>{error}</p>}

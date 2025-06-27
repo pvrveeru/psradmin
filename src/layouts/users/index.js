@@ -54,7 +54,7 @@ const Users = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("raj", response.data.data);
+      //console.log("raj", response.data.data);
       setCategories(response.data.data || []);
     } catch (err) {
       console.error(err);
@@ -152,7 +152,9 @@ const Users = () => {
         },
       });
 
-      setCategories(categories.filter((c) => c.userId !== categoryToDelete.userId));
+      setCategories(
+        categories.filter((c) => c.userId !== categoryToDelete.userId)
+      );
       setIsDeleteConfirmOpen(false);
       setCategoryToDelete(null);
     } catch (err) {
@@ -205,7 +207,10 @@ const Users = () => {
                 {loading ? (
                   <p>Loading...</p>
                 ) : (
-                  <TableContainer component={Paper} style={{ borderRadius: 0, boxShadow: "none" }}>
+                  <TableContainer
+                    component={Paper}
+                    style={{ borderRadius: 0, boxShadow: "none" }}
+                  >
                     <table
                       style={{
                         width: "100%",
@@ -214,7 +219,9 @@ const Users = () => {
                         marginBottom: "20px",
                       }}
                     >
-                      <thead style={{ background: "#efefef", fontSize: "15px" }}>
+                      <thead
+                        style={{ background: "#efefef", fontSize: "15px" }}
+                      >
                         <tr>
                           <th style={tableCellStyle}>User</th>
                           <th style={tableCellStyle}>Phone Number</th>
@@ -227,11 +234,19 @@ const Users = () => {
                         {Array.isArray(categories) &&
                           categories.map((category) => (
                             <tr key={category.userId}>
-                              <td style={tableCellStyle}>{category.userName}</td>
-                              <td style={tableCellStyle}>{category.phoneNumber}</td>
-                              <td style={tableCellStyle}>{category.deviceId}</td>
                               <td style={tableCellStyle}>
-                                {new Date(category.createdAt).toLocaleDateString()}
+                                {category.userName}
+                              </td>
+                              <td style={tableCellStyle}>
+                                {category.phoneNumber}
+                              </td>
+                              <td style={tableCellStyle}>
+                                {category.deviceId}
+                              </td>
+                              <td style={tableCellStyle}>
+                                {new Date(
+                                  category.createdAt
+                                ).toLocaleDateString()}
                               </td>
                               <td style={tableCellStyle}>
                                 <MDButton
@@ -296,13 +311,29 @@ const Users = () => {
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
-                    <Button onClick={handleFormSubmit} disabled={loading}>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="error"
+                      onClick={handleCloseDialog}
+                    >
+                      Cancel
+                    </MDButton>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="info"
+                      onClick={handleFormSubmit}
+                      disabled={loading}
+                    >
                       {loading ? "Submitting..." : "Submit"}
-                    </Button>
+                    </MDButton>
                   </DialogActions>
                 </Dialog>
-                <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
+                <Dialog
+                  open={isDeleteConfirmOpen}
+                  onClose={() => setIsDeleteConfirmOpen(false)}
+                >
                   <DialogTitle
                     style={{
                       maxWidth: "500px", // Restricts maximum size
@@ -312,13 +343,28 @@ const Users = () => {
                     Confirm Deletion
                   </DialogTitle>
                   <DialogContent>
-                    Are you sure you want to delete &quot;{categoryToDelete?.userName}&quot;?
+                    Are you sure you want to delete &quot;
+                    {categoryToDelete?.userName}&quot;?
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={() => setIsDeleteConfirmOpen(false)}>Cancel</Button>
-                    <Button onClick={handleDeleteCategory} color="error" disabled={loading}>
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="error"
+                      onClick={() => setIsDeleteConfirmOpen(false)}
+                    >
+                      Cancel
+                    </MDButton>
+
+                    <MDButton
+                      style={{ marginRight: "10px" }}
+                      variant="gradient"
+                      color="info"
+                      onClick={handleDeleteCategory}
+                      disabled={loading}
+                    >
                       {loading ? "Deleting..." : "Delete"}
-                    </Button>
+                    </MDButton>
                   </DialogActions>
                 </Dialog>
                 {error && <p style={{ color: "red" }}>{error}</p>}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TableContainer,
   TablePagination,
@@ -36,13 +36,18 @@ import api from "../api";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import moment from "moment";
-import { format } from 'date-fns';
-import dayjs from 'dayjs';
+import { format } from "date-fns";
+import dayjs from "dayjs";
+import AddIcon from "@mui/icons-material/Add";
+import ImageIcon from "@mui/icons-material/Image";
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
 
 const Works = () => {
   const [events, setEvents] = useState([]);
   const [works, setWorks] = useState([]);
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state
   const [rowsPerPage, setRowsPerPage] = useState(10); // Default rows per page
   const [page, setPage] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Dialog state
@@ -54,6 +59,13 @@ const Works = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(""); // Selected user for filtering
   const [error, setError] = useState(""); // Error message
+  const [siteIdSearch, setSiteIdSearch] = useState("");
+  const [formData, setFormData] = useState({
+    PMSiteId: "",
+    PMComments: "",
+    assignmentId: "",
+  });
+
   // Fetch data from API
 
   const fetchEvents = async () => {
@@ -120,10 +132,15 @@ const Works = () => {
     const offset = page * rowsPerPage;
     let url = `/assignments?offset=${offset}&limit=${rowsPerPage}`;
 
+    if (siteIdSearch) url += `&PMSiteId=${siteIdSearch}`;
     if (selectedAssignor) url += `&assignedBy=${selectedAssignor}`;
-    if (startDate) url += `&startDate=${dayjs(startDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
-  if (endDate) url += `&endDate=${dayjs(endDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
-    if (selectedUser) url += `&userId=${selectedUser}`; // Include user filter
+    if (startDate)
+      url += `&startDate=${dayjs(startDate, "DD-MM-YYYY").format(
+        "YYYY-MM-DD"
+      )}`;
+    if (endDate)
+      url += `&endDate=${dayjs(endDate, "DD-MM-YYYY").format("YYYY-MM-DD")}`;
+    if (selectedUser) url += `&userId=${selectedUser}`;
 
     try {
       const response = await api.get(url, {
@@ -150,7 +167,15 @@ const Works = () => {
 
   useEffect(() => {
     fetchWork();
-  }, [page, rowsPerPage, selectedAssignor, startDate, endDate, selectedUser]); // Added dependencies
+  }, [
+    page,
+    rowsPerPage,
+    selectedAssignor,
+    siteIdSearch,
+    startDate,
+    endDate,
+    selectedUser,
+  ]); // Added dependencies
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -182,6 +207,8 @@ const Works = () => {
       "Client Name": work.clientName,
       Activity: work.activity,
       SiteId: work.siteId,
+      PMSiteId: work.PMSiteId,
+      PMRemarks: work.PMComments,
       Latitude: work.latitude,
       Longitude: work.longitude,
       Remarks: work.remarks,
@@ -198,6 +225,7 @@ const Works = () => {
   const handleClearSearch = () => {
     setSelectedAssignor("");
     setSelectedUser("");
+    setSiteIdSearch("");
     setStartDate(null);
     setEndDate(null);
     setPage(0);
@@ -208,7 +236,7 @@ const Works = () => {
     const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
     setStartDate(formattedDate);
   };
-  
+
   const handleEndDateChange = (date) => {
     const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : null;
     setEndDate(formattedDate);
@@ -217,14 +245,77 @@ const Works = () => {
   const tableCellStyle = { border: "1px solid #ddd", padding: "8px" };
 
   const [open, setOpen] = useState(false);
+  const [openComments, setOpenComments] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingWrok, setEditingWrok] = useState(null); // Editing state
 
   const handleOpen = (images) => {
     setSelectedImages(images);
     setOpen(true);
   };
 
+  const handleOpenPM = (work = null) => {
+    setEditingWrok(work);
+    const newFormData = {
+      PMSiteId: work?.PMSiteId || "",
+      PMComments: work?.PMComments || "",
+      assignmentId: work?.assignmentId || "",
+    };
+    setFormData(newFormData);
+    console.log("assignmentId:", newFormData.assignmentId); // ✅ Correct way
+    setOpenComments(true);
+  };
+
   const handleClose = () => setOpen(false);
+
+  const handleCloseComments = () => setOpenComments(false);
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+const handleFormSubmit = useCallback(async () => {
+  try {
+    setLoading(true);
+
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setError("User not authenticated. Please log in.");
+      navigate("/authentication/sign-in/");
+      return;
+    }
+
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    const assignmentId = formData.assignmentId;
+
+    // Construct the request body
+    const requestBody = {
+      PMSiteId: formData.PMSiteId,
+      PMComments: formData.PMComments,
+    };
+
+    // Make the PUT request with body
+    await api.put(`/assignments/${assignmentId}`, requestBody, { headers });
+
+    handleCloseComments(); // Close the modal or dialog
+    // Optionally refresh data or show a success message
+  } catch (err) {
+    console.error("Failed to submit PM comments:", err);
+    setError("Failed to submit. Please try again.");
+  } finally {
+    setLoading(false);
+    fetchWork();
+  }
+}, [formData, navigate]);
 
   return (
     <DashboardLayout>
@@ -258,10 +349,10 @@ const Works = () => {
           <MDBox pt={3} px={2}>
             <Card style={{ backgroundColor: "#f6f0f0" }}>
               <MDBox p={3}>
+                <b style={{ lineHeight: "10px", marginLeft: "0px", position: "absolute", top: "0px" }}>
+                  Search by
+                </b>
                 <Grid container spacing={2}>
-                  <b style={{ lineHeight: "60px", marginLeft: "10px" }}>
-                    Search by
-                  </b>
                   <Grid item xs={12} sm={2} style={{ maxWidth: "17%" }}>
                     <Select
                       fullWidth
@@ -312,6 +403,16 @@ const Works = () => {
                     </Select>
                   </Grid>
 
+                  <Grid item xs={12} sm={2}>
+                    <TextField
+                      label="Search by Site ID"
+                      variant="outlined"
+                      fullWidth
+                      value={siteIdSearch}
+                      onChange={(e) => setSiteIdSearch(e.target.value)}
+                    />
+                  </Grid>
+
                   <Grid item xs={12} sm={2} className="customwidth">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
@@ -337,7 +438,7 @@ const Works = () => {
                     </LocalizationProvider>
                   </Grid>
                   <Grid item xs={12} sm={1} style={{ display: "flex" }}>
-                    {/* <MDButton
+                    <MDButton
                       variant="gradient"
                       color="info"
                       fullWidth
@@ -345,17 +446,27 @@ const Works = () => {
                       style={{ marginRight: "10px" }}
                     >
                       Search
-                    </MDButton> */}
+                    </MDButton>
+
                     <MDButton
                       variant="gradient"
-                      color="info"
+                      color="error"
                       fullWidth
                       onClick={handleClearSearch}
+                      style={{ marginRight: "10px" }}
                     >
                       Clear
                     </MDButton>
+                    <MDButton
+                      variant="gradient"
+                      color="warning"
+                      fullWidth
+                      onClick={handleExportCSV}
+                    >
+                      Export
+                    </MDButton>
                   </Grid>
-                  <Grid item xs={12} sm={1} style={{ display: "flex" }}>
+                  {/* <Grid item xs={12} sm={1} style={{ display: "flex" }}>
                     <MDButton
                       variant="gradient"
                       color="success"
@@ -364,7 +475,7 @@ const Works = () => {
                     >
                       Export
                     </MDButton>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </MDBox>
             </Card>
@@ -372,9 +483,6 @@ const Works = () => {
           <MDBox pt={3} px={2}>
             <MDBox>
               <>
-                {/* <MDButton variant="gradient" color="success" onClick={handleExportCSV}>
-                  Export CSV
-                </MDButton> */}
                 <MDBox display="flex" justifyContent="center">
                   <TableContainer component={Paper}>
                     {events?.length > 0 ? (
@@ -396,16 +504,22 @@ const Works = () => {
                               <th style={tableCellStyle}>Employee Name</th>
                               <th style={tableCellStyle}>Client Name</th>
                               <th style={tableCellStyle}>Site ID</th>
+                              <th style={tableCellStyle}>
+                                <ImageIcon fontSize="medium" />
+                              </th>
+                              <th style={tableCellStyle}>PM Site ID</th>
+                              <th style={tableCellStyle}>PM Remarks</th>
                               <th style={tableCellStyle}>Activity</th>
                               <th style={tableCellStyle}>Location</th>
                               <th style={tableCellStyle}>Remarks</th>
+                              <th style={tableCellStyle}>Action</th>
                             </tr>
                           </thead>
                           <tbody style={{ textAlign: "center" }}>
                             {Array.isArray(works) &&
                               works.map((work) => (
                                 <tr key={work.assignmentId}>
-                                  <td style={tableCellStyle}>
+                                  <td style={{ ...tableCellStyle, width: "100px" }}>
                                     {work.createdAt
                                       ? format(
                                           new Date(work.createdAt),
@@ -422,13 +536,20 @@ const Works = () => {
                                   <td style={tableCellStyle}>
                                     {work.clientName || "N/A"}
                                   </td>
+                                  <td style={tableCellStyle}>{work.siteId}</td>
                                   <td
                                     style={tableCellStyle}
                                     onClick={() =>
                                       handleOpen(work.galleryImages)
                                     }
                                   >
-                                    {work.siteId}
+                                    <ImageIcon fontSize="medium" />
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.PMSiteId || "N/A"}
+                                  </td>
+                                  <td style={tableCellStyle}>
+                                    {work.PMComments || "N/A"}
                                   </td>
                                   <td style={tableCellStyle}>
                                     {work.activity}
@@ -437,6 +558,16 @@ const Works = () => {
                                     {work.latitude} - {work.longitude}
                                   </td>
                                   <td style={tableCellStyle}>{work.remarks}</td>
+                                  <td style={tableCellStyle}>
+                                    <MDButton
+                                      variant="gradient"
+                                      color="info"
+                                      handleOpenPM
+                                      onClick={() => handleOpenPM(work)}
+                                    >
+                                      <AddIcon fontSize="medium"/>
+                                    </MDButton>
+                                  </td>
                                 </tr>
                               ))}
                           </tbody>
@@ -459,7 +590,9 @@ const Works = () => {
                             marginLeft: "10px",
                           }}
                         >
-                          <InputLabel id="rows-per-page-label">Rows per page</InputLabel>
+                          <InputLabel id="rows-per-page-label">
+                            Rows per page
+                          </InputLabel>
                           <Select
                             labelId="rows-per-page-label"
                             value={rowsPerPage}
@@ -494,6 +627,13 @@ const Works = () => {
           }}
         >
           Site Images
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            style={{ marginLeft: "auto", position: "absolute", right: "10px" }}
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           {selectedImages.length > 0 ? (
@@ -510,6 +650,63 @@ const Works = () => {
             <>No images available</>
           )}
         </DialogContent>
+      </Dialog>
+
+      <Dialog open={openComments} onClose={handleCloseComments}>
+        <DialogTitle
+          style={{
+            maxWidth: "500px", // Restricts maximum size
+            width: "500px", // Allows full width within the grid system
+          }}
+        >
+          PM Comments
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseComments}
+            style={{ marginLeft: "auto", position: "absolute", right: "10px" }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            name="PMSiteId"
+            label="PM Siteid"
+            fullWidth
+            margin="normal"
+            value={formData.PMSiteId}
+            onChange={handleFormChange}
+          />
+          <TextField
+            name="PMComments"
+            label="PM Comments"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={4}
+            value={formData.PMComments}
+            onChange={handleFormChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <MDButton
+            style={{ marginLeft: "10px" }}
+            variant="gradient"
+            color="error"
+            onClick={handleCloseComments}
+          >
+            Cancel
+          </MDButton>
+          <MDButton
+            style={{ marginLeft: "10px" }}
+            variant="gradient"
+            color="info"
+            onClick={handleFormSubmit}
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Submit"}
+          </MDButton>
+        </DialogActions>
       </Dialog>
     </DashboardLayout>
   );
