@@ -303,7 +303,7 @@ const handleFormSubmit = useCallback(async () => {
       PMComments: formData.PMComments,
     };
 
-    // Make the PUT request with body
+    // Make the PUT request with body sieid and comments
     await api.put(`/assignments/${assignmentId}`, requestBody, { headers });
 
     handleCloseComments(); // Close the modal or dialog
@@ -315,7 +315,7 @@ const handleFormSubmit = useCallback(async () => {
     setLoading(false);
     fetchWork();
   }
-}, [formData, navigate]);
+}, [formData, navigate]); 
 
   return (
     <DashboardLayout>
